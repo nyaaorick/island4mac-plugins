@@ -82,7 +82,7 @@ Pictures (`image:`) say only where they come from: `.file(path)` (the island mak
 | `@State var x = …` | A value the plugin changes. Changing it shows the new `body`. It must be `Codable` |
 | `@Stored("key") var x = …` | Kept on disk in the plugin's data folder, across runs and updates |
 | `Island.popup(_:symbol:seconds:)` | Shown beside the notch for 1 to 10 seconds (3 if you don't say) |
-| `Island.open()` | Opens the island on the plugin's tab, at most every 10 seconds, if the user allows it |
+| `Island.open(hold:)` | Opens the island on the plugin's tab, at most every 10 seconds, if the user allows it. With `hold: true` it stays open, without closing on its own, until `Island.close()` (something waiting for an answer) |
 | `Island.now` | The time `body` is rendered for. Use it rather than `Date()` |
 | `Island.isTabVisible` | Whether the tab is open. Update often only while it is |
 | `Island.dataDirectory` | A folder of the plugin's own |
@@ -222,7 +222,8 @@ Each message replaces what the plugin showed of that kind before.
 | `{"type":"buttons","buttons":[{"id":"stop","title":"Stop","symbol":"stop.fill","confirm":"Stop the timer?"}]}` | Buttons under the rows. With `confirm`, the island asks first |
 | `{"type":"input","id":"minutes","placeholder":"Minutes","text":""}` | One text field above the buttons |
 | `{"type":"popup","symbol":"bell.fill","text":"Time's up","seconds":4}` | Beside the notch for 1 to 10 seconds, ahead of music |
-| `{"type":"open"}` | Opens the island on the plugin's tab. At most every 10 seconds, only if the user allows it, and never over something they're using |
+| `{"type":"open"}` | Opens the island on the plugin's tab. At most every 10 seconds, only if the user allows it, and never over something they're using. Protocol 4: with `"hold":true` it stays open (no auto-close) until the plugin sends `{"type":"close"}` |
+| `{"type":"close"}` | Protocol 4. Closes the island `open` held, unless the pointer is on it |
 | `{"type":"clear","target":"compact"}` | Removes `compact`, `list`, `buttons`, `input` or `all` |
 
 | `{"type":"status","state":"loading","text":"Updating"}` | Protocol 3. One standard row at the top of the tab: `loading` or `error`; `idle` removes it |

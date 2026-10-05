@@ -9,9 +9,16 @@ public enum Island {
     }
 
     /// Opens the island on this plugin's tab. The island allows it at most every 10 seconds, only if the user
-    /// lets plugins do it, and never over something they're using
-    public static func open() {
-        IslandRuntime.current?.send(.open)
+    /// lets plugins do it, and never over something they're using.
+    /// - Parameter hold: Keeps it open, without closing on its own, until `close()` (something waiting for an
+    ///   answer). Needs app protocol 4; older apps open it as usual
+    public static func open(hold: Bool = false) {
+        IslandRuntime.current?.send(.open(hold: hold))
+    }
+
+    /// Closes the island that `open(hold: true)` kept open, unless the pointer is on it
+    public static func close() {
+        IslandRuntime.current?.send(.close)
     }
 
     /// Shows `body` again on the next turn. @State, @Preference and @Fetched do this by themselves; call it when

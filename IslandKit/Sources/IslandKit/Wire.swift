@@ -127,7 +127,8 @@ public enum Wire {
         case buttons([Button])
         case input(Input)
         case popup(Popup)
-        case open
+        case open(hold: Bool)
+        case close
         case clear(ClearTarget)
         case status(Status)
         case timeline(Timeline)
@@ -144,7 +145,8 @@ public enum Wire {
             case .buttons(let buttons): data = (try? encoder.encode(ButtonsBody(buttons: buttons))) ?? Data()
             case .input(let input): data = (try? encoder.encode(input)) ?? Data()
             case .popup(let popup): data = (try? encoder.encode(popup)) ?? Data()
-            case .open: data = (try? encoder.encode(TypeOnly(type: "open"))) ?? Data()
+            case .open(let hold): data = (try? encoder.encode(OpenBody(hold: hold ? true : nil))) ?? Data()
+            case .close: data = (try? encoder.encode(TypeOnly(type: "close"))) ?? Data()
             case .clear(let target): data = (try? encoder.encode(ClearBody(target: target))) ?? Data()
             case .status(let status): data = (try? encoder.encode(status)) ?? Data()
             case .timeline(let timeline): data = (try? encoder.encode(timeline)) ?? Data()
@@ -158,6 +160,7 @@ public enum Wire {
         private struct ButtonsBody: Encodable { var type = "buttons"; let buttons: [Button] }
         private struct ClearBody: Encodable { var type = "clear"; let target: ClearTarget }
         private struct TypeOnly: Encodable { let type: String }
+        private struct OpenBody: Encodable { var type = "open"; let hold: Bool? }
     }
 
     /// One line from the island. Fields a type doesn't use are nil

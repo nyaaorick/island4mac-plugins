@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    {
+      "id": "timer",
+      "name": "Timer",
+      "symbol": "timer",
+      "version": "1.0.0",
+      "protocol": 1,
+      "description": "Countdown beside the notch, with presets and pause",
+      "archive": "https://github.com/nyaaorick/island4mac-plugins/releases/download/timer-1.0.0/timer.zip"
+    }
+  ]
+}

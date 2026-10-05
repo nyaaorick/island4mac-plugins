@@ -1,0 +1,8 @@
+{
+  "id": "timer",
+  "name": "Timer",
+  "symbol": "timer",
+  "command": ["./timer"],
+  "protocol": 1,
+  "version": "1.0.0"
+}

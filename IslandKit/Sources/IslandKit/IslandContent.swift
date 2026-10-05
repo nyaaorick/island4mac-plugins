@@ -1,6 +1,6 @@
 import Foundation
 
-/// Something a plugin shows: one of the elements (Compact, Countdown, Row, Button, TextField, Alarm), a group of
+/// Something a plugin shows: one of the elements (Compact, Countdown, Row, Card, Media, Button, TextField, Alarm), a group of
 /// them, or a component of your own. The island draws all of it in its own look
 @MainActor
 public protocol IslandContent {
@@ -48,6 +48,11 @@ public enum IslandBuilder {
 public final class Collector {
     var compact: Wire.Compact?
     var rows: [Wire.Row] = []
+    var cards: [Wire.Card] = []
+    var media: Wire.Media?
+    var lyrics: [Wire.LyricLine] = []
+    var control: (@MainActor (MediaCommand) -> Void)?
+    var seek: (@MainActor (TimeInterval) -> Void)?
     var buttons: [Wire.Button] = []
     var input: Wire.Input?
     var actions: [String: @MainActor () -> Void] = [:]
@@ -82,6 +87,37 @@ public final class Collector {
             }
         }
         rows.append(row)
+    }
+
+    func addCard(_ card: Wire.Card, action: (@MainActor () -> Void)?, actions cardActions: [RowAction] = []) {
+        guard cards.count < Wire.maxItems else {
+            warnings.append("more than \(Wire.maxItems) cards; the rest are dropped")
+            return
+        }
+        var card = card
+        let id = card.id ?? Self.automaticID("card", index: cards.count, title: card.title)
+        if let action {
+            card.id = id
+            actions[id] = action
+        }
+        if !cardActions.isEmpty {
+            card.actions = cardActions.enumerated().map { index, cardAction in
+                // Under the card's own id, so it follows the card when they change
+                let actionID = "\(id)/\(index)-\(cardAction.title.prefix(40))"
+                actions[actionID] = cardAction.perform
+                return Wire.RowAction(id: actionID, title: Wire.cut(cardAction.title), symbol: cardAction.symbol)
+            }
+        }
+        cards.append(card)
+    }
+
+    func setMedia(_ media: Wire.Media, lyrics: [Wire.LyricLine], control: @escaping @MainActor (MediaCommand) -> Void,
+                  seek: @escaping @MainActor (TimeInterval) -> Void) {
+        if self.media != nil { warnings.append("more than one Media; the last one shows") }
+        self.media = media
+        self.lyrics = lyrics
+        self.control = control
+        self.seek = seek
     }
 
     func addButton(_ button: Wire.Button, explicitID: Bool, action: @escaping @MainActor () -> Void) {

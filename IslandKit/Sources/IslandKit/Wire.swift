@@ -48,6 +48,46 @@ public enum Wire {
     /// Secondary actions past this are dropped
     static let maxRowActions = 4
 
+    /// Protocol 5: a card, a row turned on its side
+    struct Card: Encodable, Equatable {
+        var id: String?
+        var title: String
+        var subtitle: String?
+        var symbol: String?
+        var image: Image?
+        var preview: CardPreview?
+        var file: String?
+        var actions: [RowAction]?
+    }
+
+    struct CardPreview: Encodable, Equatable {
+        var text: String?
+        var image: Image?
+    }
+
+    /// Protocol 5: what plays
+    struct Media: Encodable, Equatable {
+        var type = "media"
+        var title: String
+        var artist: String?
+        var album: String?
+        var artwork: Image?
+        var app: String?
+        var playing: Bool
+        var elapsed: Double?
+        var at: Double
+        var duration: Double?
+        var rate: Double?
+    }
+
+    struct LyricLine: Encodable, Equatable {
+        var time: Double?
+        var text: String
+    }
+
+    /// The island keeps a track's first 1000 lines of lyrics
+    static let maxLyricLines = 1000
+
     struct Button: Encodable, Equatable {
         var id: String
         var title: String
@@ -118,12 +158,15 @@ public enum Wire {
     }
 
     enum ClearTarget: String, Encodable {
-        case compact, list, buttons, input, all
+        case compact, list, cards, media, lyrics, buttons, input, all
     }
 
     enum Message {
         case compact(Compact)
         case list([Row])
+        case cards([Card])
+        case media(Media)
+        case lyrics([LyricLine])
         case buttons([Button])
         case input(Input)
         case popup(Popup)
@@ -142,6 +185,9 @@ public enum Wire {
             switch self {
             case .compact(let compact): data = (try? encoder.encode(compact)) ?? Data()
             case .list(let rows): data = (try? encoder.encode(ListBody(rows: rows))) ?? Data()
+            case .cards(let cards): data = (try? encoder.encode(CardsBody(cards: cards))) ?? Data()
+            case .media(let media): data = (try? encoder.encode(media)) ?? Data()
+            case .lyrics(let lines): data = (try? encoder.encode(LyricsBody(lines: lines))) ?? Data()
             case .buttons(let buttons): data = (try? encoder.encode(ButtonsBody(buttons: buttons))) ?? Data()
             case .input(let input): data = (try? encoder.encode(input)) ?? Data()
             case .popup(let popup): data = (try? encoder.encode(popup)) ?? Data()
@@ -157,6 +203,8 @@ public enum Wire {
         }
 
         private struct ListBody: Encodable { var type = "list"; let rows: [Row] }
+        private struct CardsBody: Encodable { var type = "cards"; let cards: [Card] }
+        private struct LyricsBody: Encodable { var type = "lyrics"; let lines: [LyricLine] }
         private struct ButtonsBody: Encodable { var type = "buttons"; let buttons: [Button] }
         private struct ClearBody: Encodable { var type = "clear"; let target: ClearTarget }
         private struct TypeOnly: Encodable { let type: String }
@@ -171,6 +219,13 @@ public enum Wire {
         var tab: Bool?
         /// "preferences": the value of each preference, by key
         var values: [String: Scalar]?
+        /// "drop" (protocol 5): what was dropped on the tab
+        var paths: [String]?
+        var urls: [String]?
+        /// "control" (protocol 5): play/pause, next or previous
+        var command: String?
+        /// "seek" (protocol 5): seconds into the track
+        var position: Double?
     }
 
     /// A preference's value as JSON has it

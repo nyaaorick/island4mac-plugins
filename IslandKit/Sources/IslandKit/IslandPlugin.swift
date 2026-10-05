@@ -38,6 +38,9 @@ public protocol IslandPlugin {
     /// Where its compact content goes beside the notch: `.high` ahead of popups and now playing. Needs app
     /// protocol 4
     static var priority: NotchPriority { get }
+    /// Whether you can drop files, text and links on its tab. The island does the dragging part (it opens on the
+    /// tab and shows where to drop) and hands over what was dropped, in `onDrop`. Needs app protocol 5
+    static var acceptsDrops: Bool { get }
 
     init()
 
@@ -51,6 +54,10 @@ public protocol IslandPlugin {
     /// island switches to each one at its time by itself, so an `.onDemand` plugin needn't run for it.
     /// `Island.now` is that time while `body` is rendered for it
     var timeline: [Date] { get }
+
+    /// Something was dropped on its tab (`acceptsDrops`): files and folders as paths, text the island saved as a
+    /// file in the plugin's data folder (Drops/), also a path, and links
+    func onDrop(paths: [String], urls: [URL])
 }
 
 /// Where a plugin's compact content goes beside the notch
@@ -77,6 +84,8 @@ extension IslandPlugin {
     public static var lifecycle: Lifecycle { .persistent }
     public static var background: Bool { false }
     public static var priority: NotchPriority { .normal }
+    public static var acceptsDrops: Bool { false }
+    public func onDrop(paths: [String], urls: [URL]) {}
     public var timeline: [Date] { [] }
     public func onStart() {}
 

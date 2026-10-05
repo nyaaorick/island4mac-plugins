@@ -30,6 +30,8 @@ final class IslandRuntime {
 
     private var actions: [String: @MainActor () -> Void] = [:]
     private var submits: [String: @MainActor (String) -> Void] = [:]
+    private var control: (@MainActor (MediaCommand) -> Void)?
+    private var seek: (@MainActor (TimeInterval) -> Void)?
     private var alarms: [Alarm.Entry] = []
     private var firedAlarms: Set<String> = []
     private var timer: Timer?
@@ -95,6 +97,8 @@ final class IslandRuntime {
         let collector = collect(at: nil)
         actions = collector.actions
         submits = collector.submits
+        control = collector.control
+        seek = collector.seek
         alarms = collector.alarms
         // An alarm no longer in body may come back later as a new one
         firedAlarms.formIntersection(alarms.map(\.key))
@@ -134,7 +138,22 @@ final class IslandRuntime {
             messages.append(message)
         }
         update("compact", collector.compact.map { .compact($0) }, clear: .clear(.compact))
-        update("list", collector.rows.isEmpty ? nil : .list(collector.rows), clear: .clear(.list))
+        // Cards are protocol 5; an older island shows them as rows after the rows
+        var rows = collector.rows
+        if islandProtocol >= 5 {
+            update("cards", collector.cards.isEmpty ? nil : .cards(collector.cards), clear: .clear(.cards))
+        } else {
+            rows += collector.cards.prefix(max(0, Wire.maxItems - rows.count)).map { card in
+                Wire.Row(id: card.id, title: card.title, subtitle: card.subtitle ?? card.preview?.text, symbol: card.symbol,
+                         image: card.image ?? card.preview?.image, actions: card.actions)
+            }
+        }
+        update("list", rows.isEmpty ? nil : .list(rows), clear: .clear(.list))
+        // Media is protocol 5. The track first: the island drops a new track's old lyrics, then takes these
+        if islandProtocol >= 5 {
+            update("media", collector.media.map { .media($0) }, clear: .clear(.media))
+            update("lyrics", collector.media == nil || collector.lyrics.isEmpty ? nil : .lyrics(collector.lyrics), clear: .clear(.lyrics))
+        }
         update("buttons", collector.buttons.isEmpty ? nil : .buttons(collector.buttons), clear: .clear(.buttons))
         update("input", collector.input.map { .input($0) }, clear: .clear(.input))
         // The standard loading and error row is protocol 3; older islands would only log it
@@ -181,6 +200,14 @@ final class IslandRuntime {
         case "wake":
             hasWoken = true
             refreshFetches()
+        case "drop":
+            plugin.onDrop(paths: event.paths ?? [], urls: (event.urls ?? []).compactMap(URL.init(string:)))
+        case "control":
+            guard let command = event.command.flatMap(MediaCommand.init(rawValue:)) else { return }
+            control?(command)
+        case "seek":
+            guard let position = event.position, position.isFinite else { return }
+            seek?(max(0, position))
         default:
             return
         }

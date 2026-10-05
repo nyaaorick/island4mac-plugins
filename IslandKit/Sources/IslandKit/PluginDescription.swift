@@ -20,6 +20,8 @@ struct PluginDescription: Codable, Equatable {
     var background: Bool?
     /// Only written when high (protocol 4)
     var priority: NotchPriority?
+    /// ["files"] when it takes drops (protocol 5)
+    var accepts: [String]?
 
     @MainActor
     init<Plugin: IslandPlugin>(of plugin: Plugin.Type) {
@@ -34,8 +36,11 @@ struct PluginDescription: Codable, Equatable {
         lifecycle = Plugin.lifecycle == .onDemand ? .onDemand : nil
         background = Plugin.background ? true : nil
         priority = Plugin.priority == .high ? .high : nil
-        // Images and row actions need no newer app: an older one leaves them out
-        if background != nil || priority != nil {
+        accepts = Plugin.acceptsDrops ? ["files"] : nil
+        // Images, row actions, cards and media need no newer app: an older one leaves them out or shows rows
+        if accepts != nil {
+            `protocol` = 5
+        } else if background != nil || priority != nil {
             `protocol` = 4
         } else if lifecycle != nil {
             `protocol` = 3

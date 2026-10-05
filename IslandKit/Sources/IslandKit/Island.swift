@@ -16,7 +16,8 @@ public enum Island {
         IslandRuntime.current?.send(.open(hold: hold))
     }
 
-    /// Closes the island that `open(hold: true)` kept open, unless the pointer is on it
+    /// Closes the island open on this plugin's tab: one `open(hold: true)` kept open closes unless the pointer is
+    /// on it; one opened for the user closes at once (after a paste). Needs app protocol 4 (protocol 5 for the second)
     public static func close() {
         IslandRuntime.current?.send(.close)
     }

@@ -1,0 +1,39 @@
+# Tests IslandKit and builds every plugin on each pull request. On main, also releases every plugin version that
+# has no release yet and points index.json at it. The steps are island-plugin commands (IslandKit/Sources/island-plugin).
+name: Plugins
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: plugins-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test IslandKit
+        run: swift test
+
+      - name: Build island-plugin
+        run: swift build -c release --product island-plugin
+
+      - name: Build every plugin
+        run: .build/release/island-plugin build --all
+
+      - name: Release new versions and update index.json
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          .build/release/island-plugin publish --repo "$GITHUB_REPOSITORY" --commit

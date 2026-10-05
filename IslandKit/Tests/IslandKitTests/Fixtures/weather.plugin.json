@@ -1,0 +1,53 @@
+{
+  "command" : [
+    "./weather"
+  ],
+  "id" : "weather",
+  "name" : "Weather",
+  "preferences" : [
+    {
+      "default" : "",
+      "key" : "apiKey",
+      "kind" : "secure",
+      "required" : true,
+      "title" : "API key"
+    },
+    {
+      "default" : 5,
+      "key" : "minutes",
+      "kind" : "choice",
+      "options" : [
+        {
+          "title" : "1",
+          "value" : 1
+        },
+        {
+          "title" : "5",
+          "value" : 5
+        },
+        {
+          "title" : "15",
+          "value" : 15
+        }
+      ],
+      "title" : "Refresh every"
+    },
+    {
+      "default" : 3,
+      "key" : "days",
+      "kind" : "number",
+      "maximum" : 7,
+      "minimum" : 1,
+      "title" : "Days"
+    },
+    {
+      "default" : true,
+      "key" : "celsius",
+      "kind" : "toggle",
+      "title" : "Celsius"
+    }
+  ],
+  "protocol" : 2,
+  "symbol" : "sun.max",
+  "version" : "1.0.0"
+}

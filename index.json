@@ -1,13 +1,49 @@
 {
-  "plugins": [
+  "plugins" : [
     {
-      "id": "timer",
-      "name": "Timer",
-      "symbol": "timer",
-      "version": "1.0.0",
-      "protocol": 1,
-      "description": "Countdown beside the notch, with presets and pause",
-      "archive": "https://github.com/nyaaorick/island4mac-plugins/releases/download/timer-1.0.0/timer.zip"
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/battery-1.0.0/battery.zip",
+      "description" : "The Mac's and Bluetooth devices' batteries, with a popup when one runs low",
+      "id" : "battery",
+      "name" : "Battery",
+      "protocol" : 4,
+      "symbol" : "battery.75percent",
+      "version" : "1.0.0"
+    },
+    {
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/github-status-1.0.0/github-status.zip",
+      "description" : "Whether GitHub is up, refreshed every 5 minutes",
+      "id" : "github-status",
+      "name" : "GitHub Status",
+      "protocol" : 3,
+      "symbol" : "server.rack",
+      "version" : "1.0.0"
+    },
+    {
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/notes-1.0.0/notes.zip",
+      "description" : "Quick notes: type or drop text, links and files, tap one to copy it",
+      "id" : "notes",
+      "name" : "Notes",
+      "protocol" : 5,
+      "symbol" : "note.text",
+      "version" : "1.0.0"
+    },
+    {
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/system-monitor-1.0.0/system-monitor.zip",
+      "description" : "CPU, memory, network and disk, and the busiest apps",
+      "id" : "system-monitor",
+      "name" : "System",
+      "protocol" : 2,
+      "symbol" : "gauge.with.dots.needle.33percent",
+      "version" : "1.0.0"
+    },
+    {
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/timer-2.0.0/timer.zip",
+      "description" : "Countdown beside the notch, with presets and pause",
+      "id" : "timer",
+      "name" : "Timer",
+      "protocol" : 3,
+      "symbol" : "timer",
+      "version" : "2.0.0"
     }
   ]
 }

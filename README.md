@@ -2,7 +2,7 @@
 
 Plugins for [island4mac](https://github.com/nyaaorick/island4mac), the macOS notch "Dynamic Island". Install them in the app under **Settings > Plugins**, then turn a plugin's tab on under **Settings > Tabs**.
 
-A plugin says *what* to show, never *how*: the island draws everything in its own look, so a plugin can't set colors, fonts, images or layout, and every plugin looks like the rest of the island.
+A plugin says *what* to show, never *how*: the island draws everything in its own look, so a plugin can't set colors, fonts or layout (a picture says only where it comes from), and every plugin looks like the rest of the island.
 
 ## Writing a plugin with IslandKit
 
@@ -199,7 +199,7 @@ timer/
 | `priority` | Optional, protocol 4. `"high"`: its compact content shows ahead of popups and music; the default is `"normal"` |
 | `accepts` | Optional, protocol 5. `["files"]`: files, text and links can be dropped on its tab (`drop` events) |
 
-The app runs the command, in the plugin's folder, while the plugin's tab is turned on, and stops it when the tab is turned off.
+The app runs the command, in the plugin's folder, while the plugin's tab is turned on (a `background` plugin: while it's turned on in Settings), and stops it when the tab is turned off.
 
 - **Plugin → island:** one JSON object per line on **stdout**. Flush after every line.
 - **Island → plugin:** one JSON object per line on **stdin**.
@@ -234,14 +234,13 @@ Each message replaces what the plugin showed of that kind before.
 | `{"type":"media","title":"Song","artist":"Artist","album":"Album","artwork":{"url":"https://…"},"app":"com.spotify.client","playing":true,"elapsed":42.0,"at":1767225600,"duration":215.0,"rate":1.0}` | Protocol 5. What plays, drawn with the island's own player and beside the notch. The island counts on from `elapsed` as of `at` (seconds since 1970; now if missing) at `rate`, and hides for a full-screen video of `app`. Its controls send `control` and `seek` |
 | `{"type":"lyrics","lines":[{"time":12.3,"text":"…"}]}` | Protocol 5. The playing track's lyrics, up to 1000 lines; lines with a `time` follow the song. A new track's `media` drops the old lyrics, so send them after it |
 | `{"type":"clear","target":"compact"}` | Removes `compact`, `list`, `cards`, `media`, `lyrics`, `buttons`, `input` or `all` |
-
 | `{"type":"status","state":"loading","text":"Updating"}` | Protocol 3. One standard row at the top of the tab: `loading` or `error`; `idle` removes it |
-| `{"type":"timeline","entries":[{"at":1767225600,"show":[…]}],"wake":1767229200}` | Protocol 3. Each entry's messages (`compact`, `list`, `buttons`, `input`, `status`, `clear`) are shown at its time, by the island. At `wake`, the island starts the plugin again (at most every 10 seconds). Replaces the last timeline |
+| `{"type":"timeline","entries":[{"at":1767225600,"show":[…]}],"wake":1767229200}` | Protocol 3. Each entry's messages (`compact`, `list`, `cards`, `media`, `lyrics`, `buttons`, `input`, `status`, `clear`) are shown at its time, by the island. At `wake`, the island starts the plugin again (at most every 10 seconds). Replaces the last timeline |
 | `{"type":"done"}` | Protocol 3, on-demand plugins. Nothing more to do: the island stops the plugin, and what it showed stays |
 
 - **Text limits:** text is cut at 200 characters; a text field takes up to 1000.
 - **Errors:** lines that aren't valid JSON, or have an unknown `type`, are ignored.
-- **Beside the notch:** agent sessions come first, then plugin popups, then music while it plays, then plugin compact content.
+- **Beside the notch:** high-priority plugins come first (Agents is one), then plugin popups, then music while it plays, then plugin compact content.
 
 ### Island → plugin
 

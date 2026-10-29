@@ -8,8 +8,8 @@
       "id" : "battery",
       "name" : "Battery",
       "protocol" : 4,
-      "sha256" : "4cc26c58595daf2d4d0762177e3a4615a243476f9a7817bdab3090a540678c0d",
-      "size" : 558955,
+      "sha256" : "0e4b3a1e525377877b85c61c5a4e2d8d533229fe0db569bffde2205915b491b2",
+      "size" : 576483,
       "symbol" : "battery.75percent",
       "version" : "1.0.0"
     },
@@ -21,8 +21,8 @@
       "id" : "github-status",
       "name" : "GitHub Status",
       "protocol" : 3,
-      "sha256" : "fdac76b962c19c35066b324878a6bd659ce4f6acfb1621c1780ea723b28ef5ed",
-      "size" : 511803,
+      "sha256" : "0f97f8391ec022cc911145bc4a61b00ae39feecbe8f860a296f9d1894dde8c6d",
+      "size" : 528318,
       "symbol" : "server.rack",
       "version" : "1.0.0"
     },
@@ -34,8 +34,8 @@
       "id" : "notes",
       "name" : "Notes",
       "protocol" : 5,
-      "sha256" : "98dd187faa30a621c8055b100131d835f326908ed3f63817ccdb86b4bcdf3d72",
-      "size" : 555150,
+      "sha256" : "5e813c07d7ea9b607a8b5a6077a299494b06fac16ab5e2378dd9fe26778454f3",
+      "size" : 569112,
       "symbol" : "note.text",
       "version" : "1.0.0"
     },
@@ -47,8 +47,8 @@
       "id" : "system-monitor",
       "name" : "System",
       "protocol" : 2,
-      "sha256" : "3e03c1120a09916b798bce7bc52687c530e7b3249fac372d5ea933b3fb4dbe91",
-      "size" : 569550,
+      "sha256" : "e2b1e9a4d689f9af1b1ac98e3de4118857745dfd760857119cd8829454793cd1",
+      "size" : 584755,
       "symbol" : "gauge.with.dots.needle.33percent",
       "version" : "1.0.0"
     },
@@ -60,8 +60,8 @@
       "id" : "timer",
       "name" : "Timer",
       "protocol" : 3,
-      "sha256" : "64ae36fdf7b0c5bd3cad3a3c0b7a3b47889d5b4f6d78574c8ae5cbc4c1fb9ec2",
-      "size" : 515542,
+      "sha256" : "28f625edcea5659321cabf0df1ae487353dec04299a9d9929c45ad50f5a65a6e",
+      "size" : 531584,
       "symbol" : "timer",
       "version" : "2.0.0"
     }

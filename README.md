@@ -186,4 +186,6 @@ for line in sys.stdin:          # ends when the app closes stdin
     event = json.loads(line)
 ```
 
-Install it from its folder or zip with Settings > Plugins > Install from File. To publish one here, its folder needs a `Package.swift` for CI to build, or open an issue to talk about other languages.
+Install it from its folder or zip with Settings > Plugins > Install from File.
+
+To publish one here, CI has to build it. It builds two kinds of folder: a Swift package (`Package.swift`) and a Go module (`go.mod`: `./cmd/<id>` when there is one, else the module root, built for arm64 and amd64 and joined with lipo). Either way the program must print its plugin.json when run with `--describe` (IslandKit does that for a Swift plugin), and from there the steps are the same: ad-hoc signing, the zip, the release and `index.json`. [`mihomac/`](mihomac/) is the Go one, Clash Mihomac's companion with its `island` subcommand (`describePlugin` in `cmd/mihomac/island.go`). `island-plugin dev` and `build` work in a Go folder as in a Swift one. For another language, open an issue.

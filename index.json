@@ -2,46 +2,66 @@
   "plugins" : [
     {
       "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/battery-1.0.0/battery.zip",
+      "author" : "nyaaorick",
       "description" : "The Mac's and Bluetooth devices' batteries, with a popup when one runs low",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/battery",
       "id" : "battery",
       "name" : "Battery",
       "protocol" : 4,
+      "sha256" : "4cc26c58595daf2d4d0762177e3a4615a243476f9a7817bdab3090a540678c0d",
+      "size" : 558955,
       "symbol" : "battery.75percent",
       "version" : "1.0.0"
     },
     {
       "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/github-status-1.0.0/github-status.zip",
+      "author" : "nyaaorick",
       "description" : "Whether GitHub is up, refreshed every 5 minutes",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/github-status",
       "id" : "github-status",
       "name" : "GitHub Status",
       "protocol" : 3,
+      "sha256" : "fdac76b962c19c35066b324878a6bd659ce4f6acfb1621c1780ea723b28ef5ed",
+      "size" : 511803,
       "symbol" : "server.rack",
       "version" : "1.0.0"
     },
     {
       "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/notes-1.0.0/notes.zip",
+      "author" : "nyaaorick",
       "description" : "Quick notes: type or drop text, links and files, tap one to copy it",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/notes",
       "id" : "notes",
       "name" : "Notes",
       "protocol" : 5,
+      "sha256" : "98dd187faa30a621c8055b100131d835f326908ed3f63817ccdb86b4bcdf3d72",
+      "size" : 555150,
       "symbol" : "note.text",
       "version" : "1.0.0"
     },
     {
       "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/system-monitor-1.0.0/system-monitor.zip",
+      "author" : "nyaaorick",
       "description" : "CPU, memory, network and disk, and the busiest apps",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/system-monitor",
       "id" : "system-monitor",
       "name" : "System",
       "protocol" : 2,
+      "sha256" : "3e03c1120a09916b798bce7bc52687c530e7b3249fac372d5ea933b3fb4dbe91",
+      "size" : 569550,
       "symbol" : "gauge.with.dots.needle.33percent",
       "version" : "1.0.0"
     },
     {
       "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/timer-2.0.0/timer.zip",
+      "author" : "nyaaorick",
       "description" : "Countdown beside the notch, with presets and pause",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/timer",
       "id" : "timer",
       "name" : "Timer",
       "protocol" : 3,
+      "sha256" : "64ae36fdf7b0c5bd3cad3a3c0b7a3b47889d5b4f6d78574c8ae5cbc4c1fb9ec2",
+      "size" : 515542,
       "symbol" : "timer",
       "version" : "2.0.0"
     }

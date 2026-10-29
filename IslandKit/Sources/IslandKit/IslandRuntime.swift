@@ -46,6 +46,9 @@ final class IslandRuntime {
     private var settleScheduled = false
     /// Shell runs under way (Shell.run): an on-demand plugin waits for them before it settles
     private var work = 0
+    /// Administrator commands the island is running for us, by request id
+    private var pendingSudo: [String: CheckedContinuation<ShellResult, Never>] = [:]
+    private var sudoSerial = 0
 
     init(plugin: any IslandPlugin, environment: [String: String], output: @escaping (Data) -> Void) {
         self.plugin = plugin
@@ -222,6 +225,11 @@ final class IslandRuntime {
         case "seek":
             guard let position = event.position, position.isFinite else { return }
             seek?(max(0, position))
+        case "sudo":
+            guard let id = event.id, let continuation = pendingSudo.removeValue(forKey: id) else { return }
+            continuation.resume(returning: ShellResult(status: event.status ?? -1, output: event.output ?? "", error: event.error ?? ""))
+            workEnded()
+            return
         default:
             return
         }
@@ -243,6 +251,23 @@ final class IslandRuntime {
     func workEnded() {
         work = max(0, work - 1)
         scheduleSettle()
+    }
+
+    // MARK: - Administrator access
+
+    /// Asks the island to run the command as an administrator and waits for what it came to. On an island before
+    /// protocol 8, or one that refuses, the result has status -1 and the reason in `error`
+    func sudo(_ command: [String], input: String?, timeout: TimeInterval) async -> ShellResult {
+        guard islandProtocol >= 8 else {
+            return ShellResult(status: -1, output: "", error: "this island doesn't run commands as an administrator (needs protocol 8)")
+        }
+        sudoSerial += 1
+        let id = "sudo-\(sudoSerial)"
+        workBegan()
+        return await withCheckedContinuation { continuation in
+            pendingSudo[id] = continuation
+            send(.sudo(Wire.Sudo(id: id, command: command, input: input, timeout: timeout)))
+        }
     }
 
     // MARK: - Time: alarms, the timeline, refreshes

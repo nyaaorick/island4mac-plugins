@@ -94,11 +94,13 @@ Pictures (`image:`) say only where they come from: `.file(path)` (the island mak
 | `Island.isTabVisible` | Whether the tab is open. Update often only while it is |
 | `Island.dataDirectory` | A folder of the plugin's own |
 | `Island.log(_:)` | Writes to stderr. If the plugin stops, the island shows the last lines as the reason |
+| `await Island.sudo("dscacheutil", ["-flushcache"])` | Runs a program as an administrator through the island, for a plugin with `static let needsAdmin = true`: the user saves one administrator password under Settings > Plugins and allows the plugin with the shield beside its name; the plugin never sees the password. A refusal comes back as status -1 with the reason in `error`. Needs app protocol 8 |
 | `await Shell.run("docker", ["ps"])` | Runs a program (found on PATH, or in Homebrew's and the system's folders; `Shell.which` tells) off the main thread and hands back its `status`, `output` and `error`. An on-demand plugin isn't stopped while one runs |
 | `Island.refresh()` | Shows `body` again, when something other than @State changed (an object of your own, a server) |
 | `func onStart()` | Called once when the plugin starts (not for `--describe`): start servers, timers, subscriptions |
 | `static let background = true` | Runs while turned on in Settings, whether or not its tab is one of the user's |
 | `static let priority = NotchPriority.high` | Its compact content shows ahead of popups and music |
+| `static let needsAdmin = true` | Declares that it asks for administrator access (`Island.sudo`); Settings > Plugins shows the shield for it |
 | `static let acceptsDrops = true` + `func onDrop(paths:urls:)` | Files, text and links can be dropped on its tab. The island opens on it when a drag nears the notch, shows where to drop, and hands over files as paths, text saved as a file in the data folder (`Drops/`), and links |
 
 ### Settings
@@ -161,6 +163,7 @@ var body: some IslandContent {
 | 5 | `acceptsDrops`, and a `body` that shows `Media` (an older app shows nothing for it). Cards work with any version, as rows on older apps |
 | 6 | Nothing: `state` and `detail` work with any version, and show only on 6 |
 | 7 | Nothing: `Section`, `Toggle` and `progress` work with any version (as plain rows before 7). A `RowAction` with `confirm` is left out on older apps, rather than run unasked |
+| 8 | `needsAdmin` (`Island.sudo` answers status -1 on older apps without asking) |
 
 ### Publishing
 

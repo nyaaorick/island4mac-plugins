@@ -37,6 +37,18 @@ public enum Island {
     /// A folder of the plugin's own for anything it keeps; it survives updates. nil outside the island
     public static var dataDirectory: URL? { IslandRuntime.current?.dataDirectory }
 
+    /// Runs `program` with `arguments` as an administrator, through the island: the user saves one administrator
+    /// password under Settings > Plugins and allows each plugin that declares `needsAdmin`. The island hands the
+    /// password to sudo; the plugin never sees it. A refusal (not allowed, no password, timed out, an island before
+    /// protocol 8) comes back as status -1 with the reason in `error`, so show it rather than retry. An on-demand
+    /// plugin isn't stopped while it waits
+    public static func sudo(_ program: String, _ arguments: [String] = [], input: String? = nil, timeout: TimeInterval = 60) async -> ShellResult {
+        guard let runtime = IslandRuntime.current else {
+            return ShellResult(status: -1, output: "", error: "not running in the island")
+        }
+        return await runtime.sudo([program] + arguments, input: input, timeout: timeout)
+    }
+
     /// Writes to stderr; the island shows the last lines as the reason if the plugin stops
     public static func log(_ message: String) {
         FileHandle.standardError.write(Data((message + "\n").utf8))

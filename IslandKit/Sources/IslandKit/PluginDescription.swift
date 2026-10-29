@@ -22,6 +22,8 @@ struct PluginDescription: Codable, Equatable {
     var priority: NotchPriority?
     /// ["files"] when it takes drops (protocol 5)
     var accepts: [String]?
+    /// ["admin"] when it asks for administrator access (protocol 8)
+    var needs: [String]?
 
     @MainActor
     init<Plugin: IslandPlugin>(of plugin: Plugin.Type) {
@@ -37,12 +39,14 @@ struct PluginDescription: Codable, Equatable {
         background = Plugin.background ? true : nil
         priority = Plugin.priority == .high ? .high : nil
         accepts = Plugin.acceptsDrops ? ["files"] : nil
+        needs = Plugin.needsAdmin ? ["admin"] : nil
         // Images, row actions, cards, states, sections and toggles need no newer app: an older one leaves them out or
         // shows rows. Media shows only on 5, so a body with it needs 5
         var needed = declared.isEmpty ? 1 : 2
         if lifecycle != nil { needed = max(needed, 3) }
         if background != nil || priority != nil { needed = max(needed, 4) }
         if accepts != nil || Self.bodyShowsMedia(of: plugin) { needed = max(needed, 5) }
+        if needs != nil { needed = max(needed, 8) }
         `protocol` = needed
     }
 

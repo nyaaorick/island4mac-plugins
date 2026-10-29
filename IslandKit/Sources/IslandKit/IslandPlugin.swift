@@ -41,6 +41,9 @@ public protocol IslandPlugin {
     /// Whether you can drop files, text and links on its tab. The island does the dragging part (it opens on the
     /// tab and shows where to drop) and hands over what was dropped, in `onDrop`. Needs app protocol 5
     static var acceptsDrops: Bool { get }
+    /// Whether it asks the island to run commands as an administrator (`Island.sudo`). The user allows each such
+    /// plugin under Settings > Plugins, where the island keeps the one administrator password. Needs app protocol 8
+    static var needsAdmin: Bool { get }
 
     init()
 
@@ -85,6 +88,7 @@ extension IslandPlugin {
     public static var background: Bool { false }
     public static var priority: NotchPriority { .normal }
     public static var acceptsDrops: Bool { false }
+    public static var needsAdmin: Bool { false }
     public func onDrop(paths: [String], urls: [URL]) {}
     public var timeline: [Date] { [] }
     public func onStart() {}

@@ -173,6 +173,15 @@ public enum Wire {
         var text: String?
     }
 
+    /// Protocol 8: a command to run as an administrator; the island answers with an Event of type "sudo"
+    struct Sudo: Encodable, Equatable {
+        var type = "sudo"
+        let id: String
+        let command: [String]
+        var input: String?
+        var timeout: Double?
+    }
+
     enum ClearTarget: String, Encodable {
         case compact, list, cards, media, lyrics, buttons, input, all
     }
@@ -192,6 +201,7 @@ public enum Wire {
         case status(Status)
         case timeline(Timeline)
         case done
+        case sudo(Sudo)
 
         /// One line, ending in a newline. Keys are sorted, so equal messages are equal bytes
         var line: Data {
@@ -213,6 +223,7 @@ public enum Wire {
             case .status(let status): data = (try? encoder.encode(status)) ?? Data()
             case .timeline(let timeline): data = (try? encoder.encode(timeline)) ?? Data()
             case .done: data = (try? encoder.encode(TypeOnly(type: "done"))) ?? Data()
+            case .sudo(let sudo): data = (try? encoder.encode(sudo)) ?? Data()
             }
             data.append(UInt8(ascii: "\n"))
             return data
@@ -242,6 +253,10 @@ public enum Wire {
         var command: String?
         /// "seek" (protocol 5): seconds into the track
         var position: Double?
+        /// "sudo" (protocol 8): what the command came to; -1 with `error` when the island refused
+        var status: Int32?
+        var output: String?
+        var error: String?
     }
 
     /// A preference's value as JSON has it

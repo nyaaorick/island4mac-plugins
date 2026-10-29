@@ -18,6 +18,8 @@ public enum Wire {
         var until: Double?
         var total: Double?
         var image: Image?
+        /// Protocol 6: "working", "attention", "done" or "failed". Islands before 6 ignore it
+        var state: String?
     }
 
     struct Row: Encodable, Equatable {
@@ -27,6 +29,16 @@ public enum Wire {
         var symbol: String?
         var image: Image?
         var actions: [RowAction]?
+        /// Protocol 6: "working", "attention", "done" or "failed". Islands before 6 ignore it
+        var state: String?
+        /// Protocol 6: short text at the row's right edge
+        var detail: String?
+        /// Protocol 7: "section" for a heading over the rows after it. Islands before 7 show a plain row
+        var kind: String?
+        /// Protocol 7: 0 to 1, a ring around the symbol
+        var progress: Double?
+        /// Protocol 7: a switch at the row's end
+        var toggle: Bool?
     }
 
     /// Protocol 4: where a picture comes from; the island sizes and crops it. Islands before 4 ignore it
@@ -41,6 +53,8 @@ public enum Wire {
         let id: String
         let title: String
         var symbol: String?
+        /// Protocol 7: asked first. IslandKit leaves the action out on islands before 7
+        var confirm: String?
     }
 
     /// A row's subtitle may run over up to 3 lines
@@ -58,6 +72,8 @@ public enum Wire {
         var preview: CardPreview?
         var file: String?
         var actions: [RowAction]?
+        /// Protocol 6
+        var state: String?
     }
 
     struct CardPreview: Encodable, Equatable {

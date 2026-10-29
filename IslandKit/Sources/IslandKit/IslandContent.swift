@@ -83,7 +83,7 @@ public final class Collector {
                 // Under the row's own id, so it follows the row when the list changes
                 let actionID = "\(id)/\(index)-\(rowAction.title.prefix(40))"
                 actions[actionID] = rowAction.perform
-                return Wire.RowAction(id: actionID, title: Wire.cut(rowAction.title), symbol: rowAction.symbol)
+                return Wire.RowAction(id: actionID, title: Wire.cut(rowAction.title), symbol: rowAction.symbol, confirm: Wire.cut(rowAction.confirm))
             }
         }
         rows.append(row)
@@ -105,7 +105,7 @@ public final class Collector {
                 // Under the card's own id, so it follows the card when they change
                 let actionID = "\(id)/\(index)-\(cardAction.title.prefix(40))"
                 actions[actionID] = cardAction.perform
-                return Wire.RowAction(id: actionID, title: Wire.cut(cardAction.title), symbol: cardAction.symbol)
+                return Wire.RowAction(id: actionID, title: Wire.cut(cardAction.title), symbol: cardAction.symbol, confirm: Wire.cut(cardAction.confirm))
             }
         }
         cards.append(card)

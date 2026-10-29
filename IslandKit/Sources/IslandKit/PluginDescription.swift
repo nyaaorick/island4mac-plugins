@@ -37,16 +37,23 @@ struct PluginDescription: Codable, Equatable {
         background = Plugin.background ? true : nil
         priority = Plugin.priority == .high ? .high : nil
         accepts = Plugin.acceptsDrops ? ["files"] : nil
-        // Images, row actions, cards and media need no newer app: an older one leaves them out or shows rows
-        if accepts != nil {
-            `protocol` = 5
-        } else if background != nil || priority != nil {
-            `protocol` = 4
-        } else if lifecycle != nil {
-            `protocol` = 3
-        } else {
-            `protocol` = declared.isEmpty ? 1 : 2
-        }
+        // Images, row actions, cards, states, sections and toggles need no newer app: an older one leaves them out or
+        // shows rows. Media shows only on 5, so a body with it needs 5
+        var needed = declared.isEmpty ? 1 : 2
+        if lifecycle != nil { needed = max(needed, 3) }
+        if background != nil || priority != nil { needed = max(needed, 4) }
+        if accepts != nil || Self.bodyShowsMedia(of: plugin) { needed = max(needed, 5) }
+        `protocol` = needed
+    }
+
+    /// Renders `body` once, as it is before the island says anything, to see whether it shows a Media. A body
+    /// that shows one only later (once a track plays) declares `static let protocol = 5`... or sends nothing to
+    /// an older island, which is the same for the user
+    @MainActor
+    private static func bodyShowsMedia<Plugin: IslandPlugin>(of plugin: Plugin.Type) -> Bool {
+        let collector = Collector()
+        plugin.init().body._collect(into: collector)
+        return collector.media != nil
     }
 
     var json: Data {

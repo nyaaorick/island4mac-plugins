@@ -7,12 +7,12 @@ usage: island-plugin <command>
 
   new <id> [--name <name>] [--symbol <sf symbol>]
                     Create a plugin package in ./<id>
-  dev               Build this plugin, install it into the app, and again on every change
+  dev [--dev]       Build this plugin, install it into the app (--dev: the dev app), and again on every change
   build [--all]     Build this plugin (or every plugin folder here) universal, into build/<id>/ and build/<id>.zip
   validate [--all]  Build and check, without writing build/
-  index --repo <owner/name>
-                    Rewrite index.json from what build --all made
-  publish --repo <owner/name> [--commit]
+  index --repo <owner/name> [--author <name>]
+                    Rewrite index.json from what build --all made (checksums, sizes, author, homepage)
+  publish --repo <owner/name> [--author <name>] [--commit]
                     Release new versions on GitHub, update index.json (and commit and push it)
 """
 
@@ -30,7 +30,7 @@ do {
         guard arguments.count > 1, !arguments[1].hasPrefix("-") else { throw CLIError("new needs an id\n\n\(usage)") }
         try NewCommand.run(id: arguments[1], name: option("--name", in: arguments), symbol: option("--symbol", in: arguments), in: here)
     case "dev":
-        try DevCommand.run(PluginPackage(folder: here))
+        try DevCommand.run(PluginPackage(folder: here), devApp: arguments.contains("--dev"))
     case "build", "validate":
         let packages = arguments.contains("--all") ? PluginPackage.all(in: here) : [try PluginPackage(folder: here)]
         guard !packages.isEmpty else { throw CLIError("no plugin folders here") }
@@ -48,10 +48,10 @@ do {
         }
     case "index":
         guard let repo = option("--repo", in: arguments) else { throw CLIError("index needs --repo <owner/name>") }
-        say(try PublishCommand.writeIndex(in: here, repo: repo) ? "index.json updated" : "index.json is up to date")
+        say(try PublishCommand.writeIndex(in: here, repo: repo, author: option("--author", in: arguments)) ? "index.json updated" : "index.json is up to date")
     case "publish":
         guard let repo = option("--repo", in: arguments) else { throw CLIError("publish needs --repo <owner/name>") }
-        try PublishCommand.run(in: here, repo: repo, commit: arguments.contains("--commit"))
+        try PublishCommand.run(in: here, repo: repo, author: option("--author", in: arguments), commit: arguments.contains("--commit"))
     case "help", "--help", "-h", nil:
         print(usage)
     default:

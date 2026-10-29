@@ -44,6 +44,8 @@ final class IslandRuntime {
     /// An `.onDemand` plugin quits only after the island said why it started it
     private var hasWoken = false
     private var settleScheduled = false
+    /// Shell runs under way (Shell.run): an on-demand plugin waits for them before it settles
+    private var work = 0
 
     init(plugin: any IslandPlugin, environment: [String: String], output: @escaping (Data) -> Void) {
         self.plugin = plugin
@@ -140,10 +142,16 @@ final class IslandRuntime {
         update("compact", collector.compact.map { .compact($0) }, clear: .clear(.compact))
         // Cards are protocol 5; an older island shows them as rows after the rows
         var rows = collector.rows
+        var cards = collector.cards
+        // An action that asks first is protocol 7; an older island would run it unasked, so it isn't offered there
+        if islandProtocol < 7 {
+            rows = rows.map { row in var row = row; row.actions = Self.unconfirmed(row.actions); return row }
+            cards = cards.map { card in var card = card; card.actions = Self.unconfirmed(card.actions); return card }
+        }
         if islandProtocol >= 5 {
-            update("cards", collector.cards.isEmpty ? nil : .cards(collector.cards), clear: .clear(.cards))
+            update("cards", cards.isEmpty ? nil : .cards(cards), clear: .clear(.cards))
         } else {
-            rows += collector.cards.prefix(max(0, Wire.maxItems - rows.count)).map { card in
+            rows += cards.prefix(max(0, Wire.maxItems - rows.count)).map { card in
                 Wire.Row(id: card.id, title: card.title, subtitle: card.subtitle ?? card.preview?.text, symbol: card.symbol,
                          image: card.image ?? card.preview?.image, actions: card.actions)
             }
@@ -161,6 +169,12 @@ final class IslandRuntime {
             update("status", status.map { .status($0) }, clear: .status(Wire.Status(state: "idle")))
         }
         return messages
+    }
+
+    private static func unconfirmed(_ actions: [Wire.RowAction]?) -> [Wire.RowAction]? {
+        guard let actions else { return nil }
+        let kept = actions.filter { $0.confirm == nil }
+        return kept.isEmpty ? nil : kept
     }
 
     /// Loading with nothing to show yet, or the first failure
@@ -221,6 +235,13 @@ final class IslandRuntime {
 
     /// A request ended: an `.onDemand` plugin may be done now
     func fetchFinished() {
+        scheduleSettle()
+    }
+
+    func workBegan() { work += 1 }
+
+    func workEnded() {
+        work = max(0, work - 1)
         scheduleSettle()
     }
 
@@ -287,7 +308,7 @@ final class IslandRuntime {
     }
 
     func settleIfIdle() {
-        guard runsOnDemand, hasWoken, !isTabVisible, !fetches.contains(where: \.isLoading) else { return }
+        guard runsOnDemand, hasWoken, !isTabVisible, work == 0, !fetches.contains(where: \.isLoading) else { return }
         if let alarm = nextAlarmDate, alarm <= clock() { return }
         // Once per wake: the island stops us now, and starts us again with a new wake when needed
         hasWoken = false

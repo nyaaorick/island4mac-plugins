@@ -1,7 +1,8 @@
+import CryptoKit
 import Foundation
 
 /// `index.json` in the plugins repo, and publishing what `build --all` made: a GitHub release per new version,
-/// then the index pointing at it
+/// then the index pointing at it. The app reads the index as PluginCatalogEntry (island4mac, spec/docs/05-plugin-hub.md)
 enum PublishCommand {
     struct Entry: Codable, Equatable {
         let id: String
@@ -11,6 +12,15 @@ enum PublishCommand {
         let `protocol`: Int
         var description: String?
         let archive: String
+        /// Hex SHA-256 of the archive: the app refuses a download that doesn't match
+        var sha256: String?
+        /// The archive's size in bytes
+        var size: Int?
+        var author: String?
+        /// The plugin's folder in the repo
+        var homepage: String?
+        /// The day this version was published (YYYY-MM-DD)
+        var updated: String?
     }
 
     struct Index: Codable {
@@ -33,16 +43,26 @@ enum PublishCommand {
 
     static func tag(_ manifest: Manifest) -> String { "\(manifest.id)-\(manifest.version)" }
 
-    /// Rewrites index.json from what is built; returns whether it changed
+    /// Rewrites index.json from what is built; returns whether it changed. `author` is the repo's owner unless said
     @discardableResult
-    static func writeIndex(in root: URL, repo: String) throws -> Bool {
+    static func writeIndex(in root: URL, repo: String, author: String? = nil, today: Date = Date()) throws -> Bool {
         let file = root.appendingPathComponent("index.json")
         let old = try? Data(contentsOf: file)
         var index = old.flatMap { try? JSONDecoder().decode(Index.self, from: $0) } ?? Index(plugins: [])
+        let day = ISO8601DateFormatter()
+        day.formatOptions = [.withFullDate]
         for (manifest, archive) in try built(in: root) {
+            let previous = index.plugins.first { $0.id == manifest.id }
+            let data = try Data(contentsOf: archive)
             let entry = Entry(id: manifest.id, name: manifest.name, symbol: manifest.symbol, version: manifest.version,
                               protocol: manifest.protocol, description: manifest.description,
-                              archive: "https://github.com/\(repo)/releases/download/\(tag(manifest))/\(archive.lastPathComponent)")
+                              archive: "https://github.com/\(repo)/releases/download/\(tag(manifest))/\(archive.lastPathComponent)",
+                              sha256: SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined(),
+                              size: data.count,
+                              author: author ?? repo.split(separator: "/").first.map(String.init),
+                              homepage: "https://github.com/\(repo)/tree/main/\(manifest.id)",
+                              // A version already in the index keeps its day
+                              updated: previous?.version == manifest.version ? previous?.updated : day.string(from: today))
             index.plugins.removeAll { $0.id == entry.id }
             index.plugins.append(entry)
         }
@@ -58,7 +78,7 @@ enum PublishCommand {
 
     /// Releases every built version that has no release yet, then updates index.json, and with `commit`
     /// commits and pushes it. Needs `gh`, signed in (GH_TOKEN in CI)
-    static func run(in root: URL, repo: String, commit: Bool) throws {
+    static func run(in root: URL, repo: String, author: String? = nil, commit: Bool) throws {
         for (manifest, archive) in try built(in: root) {
             let tag = tag(manifest)
             if try island_plugin.run("gh", ["release", "view", tag, "--repo", repo], capture: true).status == 0 {
@@ -70,7 +90,7 @@ enum PublishCommand {
                       "Releasing \(tag)")
             say("\(tag): released")
         }
-        guard try writeIndex(in: root, repo: repo) else {
+        guard try writeIndex(in: root, repo: repo, author: author) else {
             say("index.json is up to date")
             return
         }

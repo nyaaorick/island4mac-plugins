@@ -7,19 +7,36 @@ public struct Compact: IslandContent {
     let text: String?
     let progress: Double?
     let image: IslandImage?
+    let state: ItemState?
 
-    /// - Parameter image: Shown in place of the symbol (an album cover, an avatar)
-    public init(symbol: String? = nil, text: String? = nil, progress: Double? = nil, image: IslandImage? = nil) {
+    /// - Parameters:
+    ///   - image: Shown in place of the symbol (an album cover, an avatar)
+    ///   - state: What it's up to, drawn as the island's status glyph (protocol 6; older apps show the symbol)
+    public init(symbol: String? = nil, text: String? = nil, progress: Double? = nil, image: IslandImage? = nil,
+                state: ItemState? = nil) {
         self.symbol = symbol
         self.text = text
         self.progress = progress
         self.image = image
+        self.state = state
     }
 
     public func _collect(into collector: Collector) {
         collector.setCompact(Wire.Compact(symbol: symbol, text: Wire.cut(text), progress: progress.map { min(max($0, 0), 1) },
-                                          image: image?.wire))
+                                          image: image?.wire, state: state?.rawValue))
     }
+}
+
+/// What a row, a card or the compact content is up to. The island draws it in its own look: a turning arc while
+/// it works, a pulsing symbol while it needs you, and its colors for done and failed. A plugin says only the
+/// state, never a color, so every plugin's "needs you" looks the same. Needs app protocol 6; older apps leave it out
+public enum ItemState: String, Equatable, Sendable {
+    /// Something is going on: a turning arc takes the symbol's place
+    case working
+    /// It needs you: the symbol pulses in the attention color, and so does a row's detail
+    case attention
+    case done
+    case failed
 }
 
 /// A picture on a row or beside the notch. Say where it comes from; the island sizes, crops and caches it
@@ -44,11 +61,15 @@ public enum IslandImage: Equatable, Sendable {
 public struct RowAction {
     let title: String
     let symbol: String?
+    let confirm: String?
     let perform: @MainActor () -> Void
 
-    public init(_ title: String, symbol: String? = nil, perform: @escaping @MainActor () -> Void) {
+    /// - Parameter confirm: Asked first, in the tab, and the action runs only on yes (Delete, Stop). Needs app
+    ///   protocol 7: an older app leaves an action with a confirmation out, rather than run it unasked
+    public init(_ title: String, symbol: String? = nil, confirm: String? = nil, perform: @escaping @MainActor () -> Void) {
         self.title = title
         self.symbol = symbol
+        self.confirm = confirm
         self.perform = perform
     }
 }
@@ -77,22 +98,33 @@ public struct Row: IslandContent {
     let subtitle: String?
     let symbol: String?
     let image: IslandImage?
+    let state: ItemState?
+    let detail: String?
+    let progress: Double?
     let id: String?
     let actions: [RowAction]
     let action: (@MainActor () -> Void)?
 
     /// - Parameters:
-    ///   - subtitle: Up to 3 lines show
+    ///   - subtitle: Up to 3 lines show. With a `state`, its first line is the status line, in the state's color
+    ///   - symbol: An SF Symbol. With a `state` and no symbol, the island draws the state's own
     ///   - image: Shown in place of the symbol (a thumbnail, an app icon)
+    ///   - state: What it's up to (protocol 6; older apps show the row as it is without it)
+    ///   - detail: Short text at the row's right edge: a time, a count (protocol 6)
+    ///   - progress: 0 to 1, drawn as a ring around the symbol (protocol 7)
     ///   - id: Give rows made in a loop an id of their own (e.g. the item's), so a tap always reaches the row
     ///     that was tapped even when the list changes
     ///   - actions: Secondary actions, such as Delete or Archive (up to 4)
-    public init(_ title: String, subtitle: String? = nil, symbol: String? = nil, image: IslandImage? = nil, id: String? = nil,
+    public init(_ title: String, subtitle: String? = nil, symbol: String? = nil, image: IslandImage? = nil,
+                state: ItemState? = nil, detail: String? = nil, progress: Double? = nil, id: String? = nil,
                 actions: [RowAction] = [], action: (@MainActor () -> Void)? = nil) {
         self.title = title
         self.subtitle = subtitle
         self.symbol = symbol
         self.image = image
+        self.state = state
+        self.detail = detail
+        self.progress = progress
         self.id = id
         self.actions = actions
         self.action = action
@@ -100,8 +132,56 @@ public struct Row: IslandContent {
 
     public func _collect(into collector: Collector) {
         collector.addRow(Wire.Row(id: id, title: Wire.cut(title), subtitle: subtitle.map { String($0.prefix(Wire.maxSubtitleLength)) },
-                                  symbol: symbol, image: image?.wire),
+                                  symbol: symbol, image: image?.wire, state: state?.rawValue, detail: Wire.cut(detail),
+                                  progress: progress.map { min(max($0, 0), 1) }),
                          action: action, actions: Array(actions.prefix(Wire.maxRowActions)))
+    }
+}
+
+/// A heading over the rows after it: a caption the island draws between the rows, never tapped. Needs app
+/// protocol 7; an older app shows it as a plain row
+public struct Section: IslandContent {
+    let title: String
+    let symbol: String?
+    let detail: String?
+
+    /// - Parameter detail: Short text at the heading's end, such as a count
+    public init(_ title: String, symbol: String? = nil, detail: String? = nil) {
+        self.title = title
+        self.symbol = symbol
+        self.detail = detail
+    }
+
+    public func _collect(into collector: Collector) {
+        collector.addRow(Wire.Row(title: Wire.cut(title), symbol: symbol, detail: Wire.cut(detail), kind: "section"), action: nil)
+    }
+}
+
+/// A row with a switch at its end. A tap on the switch or the row hands `set` the other value; show the new one
+/// by changing what `isOn` is made from. Needs app protocol 7; an older app shows a plain row that still taps
+public struct Toggle: IslandContent {
+    let title: String
+    let subtitle: String?
+    let symbol: String?
+    let isOn: Bool
+    let id: String?
+    let set: @MainActor (Bool) -> Void
+
+    public init(_ title: String, subtitle: String? = nil, symbol: String? = nil, isOn: Bool, id: String? = nil,
+                set: @escaping @MainActor (Bool) -> Void) {
+        self.title = title
+        self.subtitle = subtitle
+        self.symbol = symbol
+        self.isOn = isOn
+        self.id = id
+        self.set = set
+    }
+
+    public func _collect(into collector: Collector) {
+        let isOn = isOn
+        collector.addRow(Wire.Row(id: id, title: Wire.cut(title), subtitle: subtitle.map { String($0.prefix(Wire.maxSubtitleLength)) },
+                                  symbol: symbol, toggle: isOn),
+                         action: { set(!isOn) })
     }
 }
 

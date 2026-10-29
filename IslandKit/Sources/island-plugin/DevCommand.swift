@@ -3,16 +3,20 @@ import Foundation
 /// `island-plugin dev`: builds the plugin, installs it into the app's plugins folder, and does both again
 /// whenever a source file changes. The app restarts a plugin whose program changed
 enum DevCommand {
-    static let pluginsFolder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("MacDynamicIsland/Plugins", isDirectory: true)
+    /// The installed app's plugins folder, or the dev app's ("island4mac Dev") with `--dev`
+    static func pluginsFolder(devApp: Bool) -> URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(devApp ? "island4mac Dev/Plugins" : "island4mac/Plugins", isDirectory: true)
+    }
 
-    static func run(_ package: PluginPackage) throws -> Never {
+    static func run(_ package: PluginPackage, devApp: Bool = false) throws -> Never {
         var installedOnce = false
         var snapshot = sourceSnapshot(package.folder)
+        let pluginsFolder = pluginsFolder(devApp: devApp)
         func rebuild() {
             do {
                 let built = try package.assemble(release: false)
-                let target = try install(built.folder, id: built.manifest.id)
+                let target = try install(built.folder, id: built.manifest.id, into: pluginsFolder)
                 say("Installed \(built.manifest.name) \(built.manifest.version) in \(target.path)")
                 if !installedOnce {
                     say("Turn its tab on in the app under Settings > Tabs. Watching for changes (Ctrl-C to stop)...")
@@ -35,7 +39,7 @@ enum DevCommand {
 
     /// Copies the built plugin into the plugins folder. The program is swapped in whole, by rename, so the app
     /// never runs a half-written one; plugin.json is only written when it changed
-    static func install(_ built: URL, id: String) throws -> URL {
+    static func install(_ built: URL, id: String, into pluginsFolder: URL) throws -> URL {
         let target = pluginsFolder.appendingPathComponent(id, isDirectory: true)
         try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
         let manifest = try Data(contentsOf: built.appendingPathComponent("plugin.json"))

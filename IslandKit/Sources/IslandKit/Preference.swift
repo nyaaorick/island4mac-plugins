@@ -5,6 +5,7 @@ import Foundation
 ///
 ///     @Preference("API key", secure: true, required: true) var apiKey = ""
 ///     @Preference("Refresh every", options: [1, 5, 15]) var minutes = 5
+///     @Preference("Keep for", options: [(24, "A day"), (168, "A week"), (0, "Forever")]) var hours = 24
 ///     @Preference("Days", range: 1...7) var days = 3
 ///     @Preference("Celsius") var celsius = true
 ///
@@ -22,8 +23,14 @@ public struct Preference<Value: PreferenceValue> {
     ///   - required: The plugin doesn't run until it is filled in (a String)
     public init(wrappedValue: Value, _ title: String, secure: Bool = false, options: [Value]? = nil,
                 range: ClosedRange<Double>? = nil, required: Bool = false, placeholder: String? = nil) {
-        box = PreferenceBox(value: wrappedValue, title: title, secure: secure, options: options, range: range,
+        box = PreferenceBox(value: wrappedValue, title: title, secure: secure, options: options, labels: nil, range: range,
                             required: required, placeholder: placeholder)
+    }
+
+    /// Picked from `options`, each shown with its label rather than its value ("A week" for 168)
+    public init(wrappedValue: Value, _ title: String, options: [(Value, String)], required: Bool = false) {
+        box = PreferenceBox(value: wrappedValue, title: title, secure: false, options: options.map(\.0), labels: options.map(\.1),
+                            range: nil, required: required, placeholder: nil)
     }
 
     public var wrappedValue: Value { box.value }
@@ -80,16 +87,20 @@ final class PreferenceBox<Value: PreferenceValue> {
     let title: String
     let secure: Bool
     let options: [Value]?
+    /// What each option is shown as, when not its value
+    let labels: [String]?
     let range: ClosedRange<Double>?
     let required: Bool
     let placeholder: String?
 
-    init(value: Value, title: String, secure: Bool, options: [Value]?, range: ClosedRange<Double>?, required: Bool, placeholder: String?) {
+    init(value: Value, title: String, secure: Bool, options: [Value]?, labels: [String]?, range: ClosedRange<Double>?,
+         required: Bool, placeholder: String?) {
         self.value = value
         self.defaultValue = value
         self.title = title
         self.secure = secure
         self.options = options
+        self.labels = labels
         self.range = range
         self.required = required
         self.placeholder = placeholder
@@ -120,7 +131,9 @@ extension Preference: PreferenceStorage {
         }
         return Wire.Preference(
             key: key, title: box.title, kind: kind, default: box.defaultValue.scalar,
-            options: box.options?.map { Wire.Preference.Option(title: $0.description, value: $0.scalar) },
+            options: box.options?.enumerated().map { index, option in
+                Wire.Preference.Option(title: box.labels?[index] ?? option.description, value: option.scalar)
+            },
             minimum: box.range?.lowerBound, maximum: box.range?.upperBound,
             required: box.required ? true : nil, placeholder: box.placeholder
         )

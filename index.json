@@ -8,7 +8,7 @@
       "id" : "battery",
       "name" : "Battery",
       "protocol" : 4,
-      "sha256" : "0e4b3a1e525377877b85c61c5a4e2d8d533229fe0db569bffde2205915b491b2",
+      "sha256" : "d003fae10de530cc8250f97947acef0ff726d757be50d6cea1f0c8d38f4fa3f5",
       "size" : 576483,
       "symbol" : "battery.75percent",
       "version" : "1.0.0"
@@ -21,7 +21,7 @@
       "id" : "github-status",
       "name" : "GitHub Status",
       "protocol" : 3,
-      "sha256" : "0f97f8391ec022cc911145bc4a61b00ae39feecbe8f860a296f9d1894dde8c6d",
+      "sha256" : "69e59de7ad15945c53bbfb70b38cb2b453057e2e9f5c97e9b137e0007bfa6383",
       "size" : 528318,
       "symbol" : "server.rack",
       "version" : "1.0.0"
@@ -34,9 +34,23 @@
       "id" : "notes",
       "name" : "Notes",
       "protocol" : 5,
-      "sha256" : "5e813c07d7ea9b607a8b5a6077a299494b06fac16ab5e2378dd9fe26778454f3",
+      "sha256" : "f4306934b31d162756abf13ca81626acc735a801f1fa961c322b74bbc50d6a75",
       "size" : 569112,
       "symbol" : "note.text",
+      "version" : "1.0.0"
+    },
+    {
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/storage-1.0.0/storage.zip",
+      "author" : "nyaaorick",
+      "description" : "What fills System Data, rated by risk, explained and cleaned from the island",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/storage",
+      "id" : "storage",
+      "name" : "Storage",
+      "protocol" : 8,
+      "sha256" : "e1aaf3010a7dbd092ae6e98a78e50a87a1be2eacbe9aba6f5ea876f929221a32",
+      "size" : 717898,
+      "symbol" : "internaldrive",
+      "updated" : "2026-10-29",
       "version" : "1.0.0"
     },
     {
@@ -47,7 +61,7 @@
       "id" : "system-monitor",
       "name" : "System",
       "protocol" : 2,
-      "sha256" : "e2b1e9a4d689f9af1b1ac98e3de4118857745dfd760857119cd8829454793cd1",
+      "sha256" : "2788c444a836dcd5c11b752937c009f3e6eea1f18a78817fd968a3c6ee4512ca",
       "size" : 584755,
       "symbol" : "gauge.with.dots.needle.33percent",
       "version" : "1.0.0"
@@ -60,10 +74,24 @@
       "id" : "timer",
       "name" : "Timer",
       "protocol" : 3,
-      "sha256" : "28f625edcea5659321cabf0df1ae487353dec04299a9d9929c45ad50f5a65a6e",
+      "sha256" : "96979dc16ed35df1b375d1897bdf45a2b67b46fdfc2bd64dc8db70793eff5550",
       "size" : 531584,
       "symbol" : "timer",
       "version" : "2.0.0"
+    },
+    {
+      "archive" : "https://github.com/nyaaorick/island4mac-plugins/releases/download/wifi-helper-1.0.0/wifi-helper.zip",
+      "author" : "nyaaorick",
+      "description" : "Finds a public Wi-Fi's login page when macOS won't, and clears what blocks it: TUN mode, proxies, DNS",
+      "homepage" : "https://github.com/nyaaorick/island4mac-plugins/tree/main/wifi-helper",
+      "id" : "wifi-helper",
+      "name" : "Wi-Fi Helper",
+      "protocol" : 8,
+      "sha256" : "89a7cbda369fc2f115fbc205ab1963b83400b88838ad8e5ce873bcda93b8dc1d",
+      "size" : 711672,
+      "symbol" : "wifi",
+      "updated" : "2026-10-29",
+      "version" : "1.0.0"
     }
   ]
 }

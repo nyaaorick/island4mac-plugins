@@ -7,7 +7,7 @@ usage: island-plugin <command>
 
   new <id> [--name <name>] [--symbol <sf symbol>]
                     Create a plugin package in ./<id>
-  dev [--dev]       Build this plugin, install it into the app (--dev: the dev app), and again on every change
+  dev [--dev]       Build this plugin (a Swift package or a Go module), install it into the app (--dev: the dev app), and again on every change
   build [--all]     Build this plugin (or every plugin folder here) universal, into build/<id>/ and build/<id>.zip
   validate [--all]  Build and check, without writing build/
   index --repo <owner/name> [--author <name>]

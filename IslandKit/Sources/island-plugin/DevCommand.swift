@@ -11,7 +11,7 @@ enum DevCommand {
 
     static func run(_ package: PluginPackage, devApp: Bool = false) throws -> Never {
         var installedOnce = false
-        var snapshot = sourceSnapshot(package.folder)
+        var snapshot = sourceSnapshot(package)
         let pluginsFolder = pluginsFolder(devApp: devApp)
         func rebuild() {
             do {
@@ -29,7 +29,7 @@ enum DevCommand {
         rebuild()
         while true {
             Thread.sleep(forTimeInterval: 0.5)
-            let now = sourceSnapshot(package.folder)
+            let now = sourceSnapshot(package)
             guard now != snapshot else { continue }
             snapshot = now
             say("Changed; rebuilding...")
@@ -56,15 +56,15 @@ enum DevCommand {
         return target
     }
 
-    /// Modification dates of Package.swift and everything under Sources/
-    static func sourceSnapshot(_ folder: URL) -> [String: Date] {
+    /// Modification dates of the package's sources (PluginPackage.sources)
+    static func sourceSnapshot(_ package: PluginPackage) -> [String: Date] {
         var snapshot: [String: Date] = [:]
-        let manifest = folder.appendingPathComponent("Package.swift")
-        snapshot[manifest.path] = modified(manifest)
-        let enumerator = FileManager.default.enumerator(at: folder.appendingPathComponent("Sources"),
-                                                        includingPropertiesForKeys: [.contentModificationDateKey])
-        while let file = enumerator?.nextObject() as? URL {
-            snapshot[file.path] = modified(file)
+        for source in package.sources() {
+            snapshot[source.path] = modified(source)
+            let enumerator = FileManager.default.enumerator(at: source, includingPropertiesForKeys: [.contentModificationDateKey])
+            while let file = enumerator?.nextObject() as? URL {
+                snapshot[file.path] = modified(file)
+            }
         }
         return snapshot
     }

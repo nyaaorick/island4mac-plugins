@@ -1,4 +1,4 @@
-# Tests IslandKit and builds every plugin on each pull request. On main, also releases every plugin version that
+# Tests IslandKit and builds every plugin (Swift packages on IslandKit, and Go modules) on each pull request. On main, also releases every plugin version that
 # has no release yet and points index.json at it. The steps are island-plugin commands (IslandKit/Sources/island-plugin).
 name: Plugins
 
@@ -19,6 +19,11 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: mihomac/go.mod
+          cache-dependency-path: mihomac/go.sum
 
       - name: Test IslandKit
         run: swift test
